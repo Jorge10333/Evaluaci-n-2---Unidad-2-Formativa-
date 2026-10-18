@@ -11,7 +11,6 @@ Implementación en Python del diagrama UML del sistema de gestión interna de Ec
 - `models/`: clases del UML (Usuario, Empleado, Administrador, Departamento, Proyecto, RegistroDeTiempo)
 - `config/database.py`: conexión a la base de datos con `sqlite3`
 - `main.py`: prueba de conexión a la base de datos
-- `prueba_clases.py`: prueba de las clases
 
 ## POO aplicada
 - Encapsulamiento: atributos privados con getters y setters
