@@ -1,6 +1,8 @@
 # EcoTech Solutions - Avance Estructural (EF2)
 
 Asignatura: TI3021 Programación Orientada a Objeto Seguro
+
+
 Integrantes: Jorge Lagos, Sebastian San Martin.
 
 ## Descripción
