@@ -21,4 +21,3 @@ Implementación en Python del diagrama UML del sistema de gestión interna de Ec
 
 ## Cómo ejecutar
 - Prueba de conexión: `python main.py`
-- Prueba de clases: `python prueba_clases.py`
