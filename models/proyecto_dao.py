@@ -4,10 +4,11 @@ from .proyecto import Proyecto
 
 class ProyectoDAO:
     """
-    DAO para operaciones CRUD de Proyecto.
+    DAO encargada de la persistencia de Proyecto en BD.
     """
     @staticmethod
     def crear(proyecto: Proyecto) -> bool:
+        # Guarda un nuevo proyecto
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()
@@ -26,6 +27,7 @@ class ProyectoDAO:
 
     @staticmethod
     def obtener_todos() -> list[Proyecto]:
+        # Lista todos los proyectos disponibles
         conn = Database().get_connection()
         proyectos = []
         try:
@@ -49,6 +51,7 @@ class ProyectoDAO:
 
     @staticmethod
     def obtener_por_id(id_proyecto: int) -> Proyecto | None:
+        # Obtiene un proyecto según su clave primaria
         conn = Database().get_connection()
         proyecto = None
         try:
@@ -70,6 +73,7 @@ class ProyectoDAO:
 
     @staticmethod
     def actualizar(proyecto: Proyecto) -> bool:
+        # Actualiza la información del proyecto
         if proyecto.id_proyecto is None:
             return False
         conn = Database().get_connection()
@@ -89,6 +93,7 @@ class ProyectoDAO:
 
     @staticmethod
     def eliminar(id_proyecto: int) -> bool:
+        # Borra el proyecto por ID
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()

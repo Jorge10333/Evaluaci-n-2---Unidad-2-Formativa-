@@ -3,84 +3,86 @@ from sqlite3 import Connection, Cursor
 
 class Database:
     """
-    Clase que gestiona la conexión a la base de datos implementando 
-    el patrón Singleton para evitar múltiples instancias innecesarias.
+    Clase Singleton que administra la conexión y creación de la BD SQLite.
     """
     _instance = None
-    _db_path = "ecotech.db"
+    _db_path = "ecotech_solutions.db"
 
     def __new__(cls):
+        # Garantiza que exista solo una instancia de la base de datos
         if cls._instance is None:
             cls._instance = super(Database, cls).__new__(cls)
         return cls._instance
 
     def get_connection(self) -> Connection:
-        """
-        Retorna una conexión a la base de datos SQLite.
-        """
+        # Crea la conexión y habilita claves foráneas e iteración por nombre de columna
         conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row  # Permite acceder a las columnas por nombre
+        conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON;")
         return conn
 
     def init_db(self) -> None:
-        """
-        Inicializa la base de datos creando las tablas necesarias si no existen.
-        """
+        # Crea las tablas iniciales si no existen dentro de la BD
         conn = self.get_connection()
         try:
-            cursor: Cursor = conn.cursor()          
-            # Tabla Departamento
+            cursor: Cursor = conn.cursor()
+
+            # Tabla Departamento: almacena la estructura organizacional
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS departamento (
                     id_departamento INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre TEXT NOT NULL,
-                    id_gerente INTEGER NOT NULL,
-                    FOREING KEY(id_gerente) REFERENCES empleado(idUnico) ON DELETE SET NULL
+                    id_gerente INTEGER,
+                    FOREIGN KEY(id_gerente) REFERENCES empleado(idUnico) ON DELETE SET NULL
                 )
             """)
-            # Tabla Empleado
+
+            # Tabla Empleado: datos personales y laborales
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS empleado (
-                    idUnico INTEGER PRIMARY KEY,
+                    idUnico INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre TEXT NOT NULL,
-                    direccion TEXT NOT NULL,
-                    telefono TEXT NOT NULL,
+                    direccion TEXT,
+                    telefono TEXT,
                     email TEXT NOT NULL,
                     fechaInicio TEXT NOT NULL,
-                    salario INTEGER NOT NULL,
-                    id_departamento INTEGER NOT NULL,
+                    salario REAL,
+                    id_departamento INTEGER,
                     FOREIGN KEY(id_departamento) REFERENCES departamento(id_departamento) ON DELETE SET NULL
                 )
             """)
-            #Tabla administrador (especializacion de Empleado)
+
+            # Tabla Administrador: relación 1:1 especial para administradores
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS administrador (
                     id_empleado INTEGER PRIMARY KEY,
                     FOREIGN KEY(id_empleado) REFERENCES empleado(idUnico) ON DELETE CASCADE
                 )
             """)
-            #Tabla usuario
+
+            # Tabla Usuario: cuentas de acceso y autenticación
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS usuario (
                     idUsuario INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombreUsuario TEXT NOT NULL,
                     contraseñaHash TEXT NOT NULL,
                     rol TEXT NOT NULL,
-                    id_empleado INTEGER NOT NULL,
+                    id_empleado INTEGER,
                     FOREIGN KEY(id_empleado) REFERENCES empleado(idUnico) ON DELETE CASCADE
                 )
             """)
-            #Tabla Proyecto
+
+            # Tabla Proyecto: proyectos asignables
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS proyecto (
-                    id_proyecto INTEGER PRYMARI KEY AUTOINCREMENT,
+                    id_proyecto INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre TEXT NOT NULL,
-                    descripcion TEXT NOT NULL,
-                    fechaInicio TEXT NOT NULL,
+                    descripcion TEXT,
+                    fechaInicio TEXT NOT NULL
                 )
             """)
-            #Tabla intermedia
+
+            # Tabla Intermedia Empleado_Proyecto: relación N:M entre empleados y proyectos
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS empleado_proyecto (
                     id_empleado_proyecto INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,9 +92,10 @@ class Database:
                     FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE CASCADE
                 )
             """)
-            #Tabla Registro-Tiempo
+
+            # Tabla Registro_Tiempo: horas trabajadas vinculadas a un empleado y proyecto
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS registro_tiempo(
+                CREATE TABLE IF NOT EXISTS registro_tiempo (
                     id_registro INTEGER PRIMARY KEY AUTOINCREMENT,
                     fecha TEXT NOT NULL,
                     cantidadHoraTrabajada REAL NOT NULL,
@@ -103,14 +106,9 @@ class Database:
                     FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE CASCADE
                 )
             """)
-            
-            conn.commit()
+
+            conn.commit()  # Guarda las tablas creadas
         except sqlite3.Error as e:
             print(f"Error al inicializar la base de datos: {e}")
         finally:
-            conn.close()
-
-if __name__ == "__main__":
-    db = Database()
-    db.init_db()
-    print("Base de datos inicializada correctamente.")
+            conn.close()  # Libera la conexión

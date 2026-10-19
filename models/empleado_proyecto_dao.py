@@ -1,13 +1,11 @@
+# --- DAO de la tabla intermedia (Relación N:M) ---
 from sqlite3 import Cursor
 from config.database import Database
-from .empleado_proyecto import EmpleadoProyecto
 
 class EmpleadoProyectoDAO:
-    """
-    DAO para gestionar la asignación y desasignación de Empleados a Proyectos.
-    """
     @staticmethod
     def asignar(asignacion: EmpleadoProyecto) -> bool:
+        # Crea la vinculación entre un empleado y un proyecto
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()
@@ -26,6 +24,7 @@ class EmpleadoProyectoDAO:
 
     @staticmethod
     def desasignar(id_empleado: int, id_proyecto: int) -> bool:
+        # Elimina la asignación específica entre un empleado y un proyecto
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()
@@ -40,18 +39,3 @@ class EmpleadoProyectoDAO:
             return False
         finally:
             conn.close()
-
-    @staticmethod
-    def obtener_proyectos_por_empleado(id_empleado: int) -> list[int]:
-        conn = Database().get_connection()
-        proyectos_ids = []
-        try:
-            cursor: Cursor = conn.cursor()
-            cursor.execute("SELECT id_proyecto FROM empleado_proyecto WHERE id_empleado = ?", (id_empleado,))
-            filas = cursor.fetchall()
-            proyectos_ids = [fila['id_proyecto'] for fila in filas]
-        except Exception as e:
-            print(f"Error al obtener proyectos asignados: {e}")
-        finally:
-            conn.close()
-        return proyectos_ids

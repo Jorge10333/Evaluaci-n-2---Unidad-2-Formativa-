@@ -1,13 +1,10 @@
 from sqlite3 import Cursor
 from config.database import Database
-from .registro_tiempo import RegistroTiempo
 
 class RegistroTiempoDAO:
-    """
-    DAO para operaciones CRUD de Registro de Tiempo.
-    """
     @staticmethod
     def crear(registro: RegistroTiempo) -> bool:
+        # Inserta un nuevo reporte de horas
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()
@@ -35,6 +32,7 @@ class RegistroTiempoDAO:
 
     @staticmethod
     def obtener_por_empleado(id_empleado: int) -> list[RegistroTiempo]:
+        # Filtra todas las horas trabajadas ingresadas por un empleado
         conn = Database().get_connection()
         registros = []
         try:
@@ -60,6 +58,7 @@ class RegistroTiempoDAO:
 
     @staticmethod
     def eliminar(id_registro: int) -> bool:
+        # Borra una entrada específica de horas
         conn = Database().get_connection()
         try:
             cursor: Cursor = conn.cursor()
@@ -71,4 +70,3 @@ class RegistroTiempoDAO:
             return False
         finally:
             conn.close()
-            
