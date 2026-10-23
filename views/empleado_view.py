@@ -3,9 +3,6 @@ from models.empleado import Empleado
 from models.departamento import Departamento
 
 class EmpleadoView:
-    """
-    Vista encargada de las pantallas del módulo Empleado.
-    """
     @staticmethod
     def mostrar_menu() -> int:
         print("\n" + "-"*30)
@@ -22,7 +19,6 @@ class EmpleadoView:
 
     @staticmethod
     def formulario_nuevo_empleado(departamentos: list[Departamento]) -> dict:
-        # Formularios para la captura inicial de datos de un empleado
         print("\n--- Agregar Nuevo Empleado ---")
         nombre = input("Nombre completo: ")
         direccion = input("Dirección: ")
@@ -70,7 +66,6 @@ class EmpleadoView:
 
     @staticmethod
     def formulario_editar_empleado(empleado: Empleado, departamentos: list[Departamento]) -> dict:
-        # Formulario que permite reemplazar u omitir datos de un empleado
         print(f"\n--- Editando Empleado [ID: {empleado.id_unico}] ---")
         print("Deje en blanco si no desea modificar el campo.")
 
@@ -80,8 +75,16 @@ class EmpleadoView:
         nuevo_email = input(f"Email actual ({empleado.email}): ") or empleado.email
         nueva_fecha = input(f"Fecha Inicio actual ({empleado.fecha_inicio}): ") or empleado.fecha_inicio
 
+        # Conversión de salario resguardada
         salario_input = input(f"Salario actual ({empleado.salario}): ").strip()
-        nuevo_salario = float(salario_input) if salario_input else empleado.salario
+        if not salario_input:
+            nuevo_salario = empleado.salario
+        else:
+            try:
+                nuevo_salario = float(salario_input)
+            except ValueError:
+                print("⚠️ Salario inválido ingresado. Se mantendrá el salario previo.")
+                nuevo_salario = empleado.salario
 
         print("\nDepartamentos disponibles:")
         for dep in departamentos:

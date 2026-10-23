@@ -1,12 +1,17 @@
+import sqlite3
 from sqlite3 import Cursor
 from config.database import Database
+from .registro_tiempo import RegistroTiempo  # Importación corregida
 
 class RegistroTiempoDAO:
+    """
+    Data Access Object para la entidad RegistroTiempo.
+    """
     @staticmethod
     def crear(registro: RegistroTiempo) -> bool:
-        # Inserta un nuevo reporte de horas
-        conn = Database().get_connection()
+        conn = None
         try:
+            conn = Database().get_connection()
             cursor: Cursor = conn.cursor()
             cursor.execute(
                 """
@@ -24,18 +29,19 @@ class RegistroTiempoDAO:
             conn.commit()
             registro.id_registro = cursor.lastrowid
             return True
-        except Exception as e:
-            print(f"Error al registrar tiempo: {e}")
+        except sqlite3.Error as e:
+            print(f"Error al registrar tiempo en BD: {e}")
             return False
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     @staticmethod
     def obtener_por_empleado(id_empleado: int) -> list[RegistroTiempo]:
-        # Filtra todas las horas trabajadas ingresadas por un empleado
-        conn = Database().get_connection()
+        conn = None
         registros = []
         try:
+            conn = Database().get_connection()
             cursor: Cursor = conn.cursor()
             cursor.execute("SELECT * FROM registro_tiempo WHERE id_empleado = ?", (id_empleado,))
             filas = cursor.fetchall()
@@ -50,23 +56,25 @@ class RegistroTiempoDAO:
                         id_registro=fila['id_registro']
                     )
                 )
-        except Exception as e:
+        except sqlite3.Error as e:
             print(f"Error al obtener registros de tiempo por empleado: {e}")
         finally:
-            conn.close()
+            if conn:
+                conn.close()
         return registros
 
     @staticmethod
     def eliminar(id_registro: int) -> bool:
-        # Borra una entrada específica de horas
-        conn = Database().get_connection()
+        conn = None
         try:
+            conn = Database().get_connection()
             cursor: Cursor = conn.cursor()
             cursor.execute("DELETE FROM registro_tiempo WHERE id_registro = ?", (id_registro,))
             conn.commit()
             return cursor.rowcount > 0
-        except Exception as e:
+        except sqlite3.Error as e:
             print(f"Error al eliminar registro de tiempo: {e}")
             return False
         finally:
-            conn.close()
+            if conn:
+                conn.close()

@@ -9,25 +9,34 @@ class Database:
     _db_path = "ecotech_solutions.db"
 
     def __new__(cls):
-        # Garantiza que exista solo una instancia de la base de datos
         if cls._instance is None:
             cls._instance = super(Database, cls).__new__(cls)
         return cls._instance
 
     def get_connection(self) -> Connection:
-        # Crea la conexión y habilita claves foráneas e iteración por nombre de columna
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA foreign_keys = ON;")
-        return conn
+        """
+        Retorna una conexión a SQLite habilitando soporte para foreign keys.
+        """
+        try:
+            conn = sqlite3.connect(self._db_path)
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA foreign_keys = ON;")
+            return conn
+        except sqlite3.Error as e:
+            print(f"❌ Error al conectar con la base de datos: {e}")
+            raise
 
     def init_db(self) -> None:
-        # Crea las tablas iniciales si no existen dentro de la BD
-        conn = self.get_connection()
+        """
+        Inicializa la estructura de las tablas en la base de datos.
+        Garantiza el cierre seguro de la conexión mediante un bloque finally.
+        """
+        conn = None
         try:
+            conn = self.get_connection()
             cursor: Cursor = conn.cursor()
 
-            # Tabla Departamento: almacena la estructura organizacional
+            # Tabla Departamento
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS departamento (
                     id_departamento INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +46,7 @@ class Database:
                 )
             """)
 
-            # Tabla Empleado: datos personales y laborales
+            # Tabla Empleado
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS empleado (
                     idUnico INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,15 +61,7 @@ class Database:
                 )
             """)
 
-            # Tabla Administrador: relación 1:1 especial para administradores
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS administrador (
-                    id_empleado INTEGER PRIMARY KEY,
-                    FOREIGN KEY(id_empleado) REFERENCES empleado(idUnico) ON DELETE CASCADE
-                )
-            """)
-
-            # Tabla Usuario: cuentas de acceso y autenticación
+            # Tabla Usuario
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS usuario (
                     idUsuario INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +73,7 @@ class Database:
                 )
             """)
 
-            # Tabla Proyecto: proyectos asignables
+            # Tabla Proyecto
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS proyecto (
                     id_proyecto INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,18 +83,19 @@ class Database:
                 )
             """)
 
-            # Tabla Intermedia Empleado_Proyecto: relación N:M entre empleados y proyectos
+            # Tabla Intermedia Empleado_Proyecto (Con restricción UNIQUE)
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS empleado_proyecto (
                     id_empleado_proyecto INTEGER PRIMARY KEY AUTOINCREMENT,
                     id_empleado INTEGER NOT NULL,
                     id_proyecto INTEGER NOT NULL,
                     FOREIGN KEY(id_empleado) REFERENCES empleado(idUnico) ON DELETE CASCADE,
-                    FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE CASCADE
+                    FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE CASCADE,
+                    UNIQUE(id_empleado, id_proyecto)
                 )
             """)
 
-            # Tabla Registro_Tiempo: horas trabajadas vinculadas a un empleado y proyecto
+            # Tabla Registro_Tiempo
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS registro_tiempo (
                     id_registro INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,8 +109,9 @@ class Database:
                 )
             """)
 
-            conn.commit()  # Guarda las tablas creadas
+            conn.commit()
         except sqlite3.Error as e:
-            print(f"Error al inicializar la base de datos: {e}")
+            print(f"❌ Error al inicializar la base de datos: {e}")
         finally:
-            conn.close()  # Libera la conexión
+            if conn:
+                conn.close()

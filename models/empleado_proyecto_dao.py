@@ -1,13 +1,17 @@
-# --- DAO de la tabla intermedia (Relación N:M) ---
+import sqlite3
 from sqlite3 import Cursor
 from config.database import Database
+from .empleado_proyecto import EmpleadoProyecto  # Importación corregida
 
 class EmpleadoProyectoDAO:
+    """
+    DAO para gestionar la asignación de empleados a proyectos (Relación N:M).
+    """
     @staticmethod
     def asignar(asignacion: EmpleadoProyecto) -> bool:
-        # Crea la vinculación entre un empleado y un proyecto
-        conn = Database().get_connection()
+        conn = None
         try:
+            conn = Database().get_connection()
             cursor: Cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO empleado_proyecto (id_empleado, id_proyecto) VALUES (?, ?)",
@@ -16,17 +20,18 @@ class EmpleadoProyectoDAO:
             conn.commit()
             asignacion.id_empleado_proyecto = cursor.lastrowid
             return True
-        except Exception as e:
-            print(f"Error al asignar empleado a proyecto: {e}")
+        except sqlite3.Error as e:
+            print(f"Error al asignar empleado a proyecto en BD: {e}")
             return False
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     @staticmethod
     def desasignar(id_empleado: int, id_proyecto: int) -> bool:
-        # Elimina la asignación específica entre un empleado y un proyecto
-        conn = Database().get_connection()
+        conn = None
         try:
+            conn = Database().get_connection()
             cursor: Cursor = conn.cursor()
             cursor.execute(
                 "DELETE FROM empleado_proyecto WHERE id_empleado = ? AND id_proyecto = ?",
@@ -34,8 +39,9 @@ class EmpleadoProyectoDAO:
             )
             conn.commit()
             return cursor.rowcount > 0
-        except Exception as e:
+        except sqlite3.Error as e:
             print(f"Error al desasignar empleado del proyecto: {e}")
             return False
         finally:
-            conn.close()
+            if conn:
+                conn.close()

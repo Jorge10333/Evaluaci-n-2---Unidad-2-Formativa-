@@ -1,6 +1,6 @@
-# --- Controlador de Proyectos ---
 from models.proyecto import Proyecto
 from models.proyecto_dao import ProyectoDAO
+from models.empleado_dao import EmpleadoDAO
 from models.empleado_proyecto import EmpleadoProyecto
 from models.empleado_proyecto_dao import EmpleadoProyectoDAO
 from views.proyecto_view import ProyectoView
@@ -51,14 +51,11 @@ class ProyectoController:
             self.view.mostrar_mensaje("Proyecto no encontrado.")
             return
 
-        nombre_nuevo = input(f"Nuevo nombre ({proyecto.nombre}): ") or proyecto.nombre
-        desc_nueva = input(f"Nueva descripción ({proyecto.descripcion}): ") or proyecto.descripcion
-        fecha_nueva = input(f"Nueva fecha inicio ({proyecto.fecha_inicio}): ") or proyecto.fecha_inicio
-
+        datos = self.view.formulario_editar_proyecto(proyecto)
         try:
-            proyecto.nombre = nombre_nuevo
-            proyecto.descripcion = desc_nueva
-            proyecto.fecha_inicio = fecha_nueva
+            proyecto.nombre = datos['nombre']
+            proyecto.descripcion = datos['descripcion']
+            proyecto.fecha_inicio = datos['fecha_inicio']
             exito = ProyectoDAO.actualizar(proyecto)
             if exito:
                 self.view.mostrar_mensaje("Proyecto actualizado exitosamente.")
@@ -68,18 +65,24 @@ class ProyectoController:
             self.view.mostrar_mensaje(f"Error en la edición: {e}")
 
     def asignar_empleado(self) -> None:
-        # Invoca al DAO de la relación intermedia N:M
         id_emp = self.view.solicitar_id_empleado()
+        if not EmpleadoDAO.obtener_por_id(id_emp):
+            self.view.mostrar_mensaje(f"❌ El empleado con ID {id_emp} no existe.")
+            return
+
         id_proy = self.view.solicitar_id()
+        if not ProyectoDAO.obtener_por_id(id_proy):
+            self.view.mostrar_mensaje(f"❌ El proyecto con ID {id_proy} no existe.")
+            return
+
         asignacion = EmpleadoProyecto(id_empleado=id_emp, id_proyecto=id_proy)
         exito = EmpleadoProyectoDAO.asignar(asignacion)
         if exito:
             self.view.mostrar_mensaje("Empleado asignado correctamente al proyecto.")
         else:
-            self.view.mostrar_mensaje("Error al asignar empleado.")
+            self.view.mostrar_mensaje("Error al asignar (posiblemente ya está asignado).")
 
     def desasignar_empleado(self) -> None:
-        # Elimina relación de la tabla intermedia
         id_emp = self.view.solicitar_id_empleado()
         id_proy = self.view.solicitar_id()
         exito = EmpleadoProyectoDAO.desasignar(id_emp, id_proy)

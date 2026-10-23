@@ -1,4 +1,3 @@
-# --- Vista de Proyecto ---
 from views.utils import leer_numero, confirmar
 from models.proyecto import Proyecto
 
@@ -29,6 +28,20 @@ class ProyectoView:
             "nombre": nombre,
             "descripcion": descripcion,
             "fecha_inicio": fecha_inicio
+        }
+
+    @staticmethod
+    def formulario_editar_proyecto(proyecto: Proyecto) -> dict:
+        print(f"\n--- Editando Proyecto [ID: {proyecto.id_proyecto}] ---")
+        print("Deje en blanco si no desea modificar el campo.")
+        nuevo_nombre = input(f"Nombre actual ({proyecto.nombre}): ") or proyecto.nombre
+        nueva_desc = input(f"Descripción actual ({proyecto.descripcion}): ") or proyecto.descripcion
+        nueva_fecha = input(f"Fecha Inicio actual ({proyecto.fecha_inicio}): ") or proyecto.fecha_inicio
+        
+        return {
+            "nombre": nuevo_nombre,
+            "descripcion": nueva_desc,
+            "fecha_inicio": nueva_fecha
         }
 
     @staticmethod
