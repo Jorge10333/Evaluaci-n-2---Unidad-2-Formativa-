@@ -23,7 +23,7 @@ class Database:
             conn.execute("PRAGMA foreign_keys = ON;")
             return conn
         except sqlite3.Error as e:
-            print(f"❌ Error al conectar con la base de datos: {e}")
+            print(f"Error al conectar con la base de datos: {e}")
             raise
 
     def init_db(self) -> None:
@@ -61,11 +61,13 @@ class Database:
                 )
             """)
 
-            # Tabla Usuario
+            # Tabla Usuario: guarda cuentas de acceso.
+            # NOTA DE SEGURIDAD: Se usa 'UNIQUE' en nombreUsuario para evitar duplicados y
+            # 'contraseñaHash' para guardar únicamente el resumen SHA-256 (nunca texto plano).
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS usuario (
                     idUsuario INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombreUsuario TEXT NOT NULL,
+                    nombreUsuario TEXT NOT NULL UNIQUE,
                     contraseñaHash TEXT NOT NULL,
                     rol TEXT NOT NULL,
                     id_empleado INTEGER,
@@ -109,9 +111,27 @@ class Database:
                 )
             """)
 
+            # Tabla Reporte_Clima (Persistencia local de consultas a la API Open-Meteo)
+            # Persiste localmente los datos obtenidos desde la API Open-Meteo, asociándolos
+            # opcionalmente a un proyecto (id_proyecto) y al usuario que realizó la consulta (id_usuario).
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS reporte_clima (
+                    id_reporte INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ciudad TEXT NOT NULL,
+                    pais TEXT,
+                    temperatura REAL NOT NULL,
+                    velocidad_viento REAL,
+                    fecha_consulta TEXT NOT NULL,
+                    id_proyecto INTEGER,
+                    id_usuario INTEGER,
+                    FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE SET NULL,
+                    FOREIGN KEY(id_usuario) REFERENCES usuario(idUsuario) ON DELETE SET NULL
+                )
+            """)
+
             conn.commit()
         except sqlite3.Error as e:
-            print(f"❌ Error al inicializar la base de datos: {e}")
+            print(f"Error al inicializar la base de datos: {e}")
         finally:
             if conn:
                 conn.close()
