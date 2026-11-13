@@ -1,15 +1,17 @@
-from views.main_view import MainView  # Importa la vista principal del sistema
+from views.main_view import MainView  # Importa la vista principal
 from controllers.auth_controller import AuthController  # Importa el controlador de autenticación
 from controllers.clima_controller import ClimaController  # Importa el controlador de clima
-from models.usuario import Usuario  # Importa el modelo Usuario para tipar la sesión activa
+from controllers.pago_controller import PagoController  # Importa el controlador de pagos internacionales
+from models.usuario import Usuario  # Importa el modelo Usuario
 
 
-class MainController:  # Define el controlador raíz que orquesta toda la aplicación
-    def __init__(self):  # Constructor del controlador principal
+class MainController:  # Controlador raíz de la aplicación
+    def __init__(self):
         self.view = MainView()  # Instancia la vista principal
-        self.auth_controller = AuthController()  # Instancia el controlador de login y usuarios
-        self.clima_controller = ClimaController()  # Instancia el controlador del módulo de clima
-        self.usuario_actual: Usuario | None = None  # Almacena el usuario que inició sesión
+        self.auth_controller = AuthController()  # Instancia controlador de login
+        self.clima_controller = ClimaController()  # Instancia controlador de clima
+        self.pago_controller = PagoController()  # Instancia controlador de divisas y pagos internacionales
+        self.usuario_actual: Usuario | None = None  # Almacena la sesión activa
 
     def ejecutar(self) -> None:  # Punto de entrada del flujo de control de la aplicación
         # 1. Exige superar el inicio de sesión con credenciales encriptadas antes de mostrar el menú
@@ -31,6 +33,8 @@ class MainController:  # Define el controlador raíz que orquesta toda la aplica
                 self.clima_controller.ejecutar(self.usuario_actual)  # Abre el módulo de clima pasando el usuario activo
             elif opcion == 4:
                 self.auth_controller.ejecutar(self.usuario_actual)  # Abre la gestión de usuarios
+            elif opcion == 5:
+                self.pago_controller.ejecutar(self.usuario_actual)  # Abre el módulo de pagos internacionales
             elif opcion == 9:
                 # Cierra la sesión actual y vuelve a pedir usuario y contraseña
                 self.view.mostrar_mensaje(f"Cerrando sesión de '{self.usuario_actual.nombre_usuario}'...")

@@ -129,6 +129,27 @@ class Database:
                 )
             """)
 
+            # Crea la tabla pago_internacional para registrar liquidaciones ajustadas por tipo de cambio
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS pago_internacional (
+                    id_pago INTEGER PRIMARY KEY AUTOINCREMENT,
+                    pais_proyecto TEXT NOT NULL,
+                    moneda_origen TEXT NOT NULL,
+                    moneda_destino TEXT NOT NULL,
+                    monto_base REAL NOT NULL,
+                    tasa_cambio REAL NOT NULL,
+                    monto_convertido REAL NOT NULL,
+                    fecha_tasa TEXT NOT NULL,
+                    fecha_registro TEXT NOT NULL,
+                    id_empleado INTEGER,
+                    id_proyecto INTEGER,
+                    id_usuario INTEGER,
+                    FOREIGN KEY(id_empleado) REFERENCES empleado(idUnico) ON DELETE SET NULL,
+                    FOREIGN KEY(id_proyecto) REFERENCES proyecto(id_proyecto) ON DELETE SET NULL,
+                    FOREIGN KEY(id_usuario) REFERENCES usuario(idUsuario) ON DELETE SET NULL
+                )
+            """)  # Almacena el monto original, la tasa oficial de Frankfurter y el total convertido
+
             conn.commit()
         except sqlite3.Error as e:
             print(f"Error al inicializar la base de datos: {e}")

@@ -14,6 +14,7 @@ class MainView:  # Define la vista del menú principal de EcoTech Solutions
         print("2.- Gestión de Proyectos y Registro de Tiempo")
         print("3.- Monitoreo Climático en Terreno (Consumo API Open-Meteo)")
         print("4.- Gestión de Usuarios (Credenciales Encriptadas)")
+        print("5.- Pagos Internacionales y Divisas (Frankfurter API)")
         print("9.- Cerrar Sesión (Cambiar de Usuario)")
         print("0.- Salir del Sistema")
         print("=" * 58)
